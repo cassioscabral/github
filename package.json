@@ -1,24 +1,82 @@
 {
   "name": "github-api",
-  "version": "0.10.6",
+  "version": "2.4.0",
+  "license": "BSD-3-Clause-Clear",
   "description": "A higher-level wrapper around the Github API.",
-  "main": "github.js",
+  "main": "dist/components/GitHub.js",
+  "contributors": [
+    "Ændrew Rininsland <aendrew.rininsland@thetimes.co.uk> (http://www.aendrew.com)",
+    "Aurelio De Rosa <a.derosa@audero.it> (http://www.audero.it/)",
+    "Clay Reimann <clayreimann@gmail.com> (http://clayreimann.me)",
+    "Michael Aufreiter (http://substance.io)"
+  ],
+  "readmeFilename": "README.md",
+  "scripts": {
+    "clean": "gulp clean",
+    "build": "gulp build",
+    "test": "mocha --opts ./mocha.opts test/*.spec.js",
+    "test-verbose": "DEBUG=github* npm test",
+    "lint": "gulp lint",
+    "make-docs": "node_modules/.bin/jsdoc -c .jsdoc.json --verbose",
+    "release": "./release.sh"
+  },
+  "babel": {
+    "presets": [
+      "es2015"
+    ],
+    "plugins": [
+      [
+        "transform-es2015-modules-umd",
+        {
+          "globals": {
+            "es6-promise": "Promise"
+          }
+        }
+      ]
+    ],
+    "env": {
+      "development": {
+        "sourceMaps": "inline"
+      }
+    }
+  },
+  "files": [
+    "dist/*",
+    "lib/*"
+  ],
   "dependencies": {
-    "atob": "^1.1.2",
-    "btoa": "^1.1.2",
-    "xmlhttprequest": "~1.7.0"
+    "axios": "^0.10.0",
+    "debug": "^2.2.0",
+    "es6-promise": "^3.0.2",
+    "js-base64": "^2.1.9",
+    "utf8": "^2.1.1"
   },
   "devDependencies": {
-    "argg": "0.0.1",
-    "istanbul": "^0.3.13",
-    "jshint": "^2.5.8",
-    "plato": "^1.4.0",
-    "tape": "^3.0.3",
-    "testling": "^1.7.1"
-  },
-  "scripts": {
-    "test": "node node_modules/argg test/*.js && node node_modules/jshint/bin/jshint github.js test/*.js",
-    "jshint": "node node_modules/jshint/bin/jshint github.js test/*.js"
+    "babel-core": "^6.7.7",
+    "babel-plugin-transform-es2015-modules-umd": "^6.5.0",
+    "babel-preset-es2015": "^6.5.0",
+    "babel-register": "^6.7.2",
+    "babelify": "^7.3.0",
+    "browserify": "^13.0.0",
+    "codecov": "^1.0.1",
+    "del": "^2.2.0",
+    "eslint-config-google": "^0.5.0",
+    "eslint-plugin-mocha": "^2.2.0",
+    "gulp": "^3.9.0",
+    "gulp-babel": "^6.1.2",
+    "gulp-eslint": "^2.0.0",
+    "gulp-jscs": "^3.0.2",
+    "gulp-jscs-stylish": "^1.3.0",
+    "gulp-rename": "^1.2.2",
+    "gulp-sourcemaps": "^1.6.0",
+    "gulp-uglify": "^1.5.1",
+    "jsdoc": "^3.4.0",
+    "minami": "^1.1.1",
+    "mocha": "^2.3.4",
+    "must": "^0.13.1",
+    "nock": "^8.0.0",
+    "vinyl-buffer": "^1.0.0",
+    "vinyl-source-stream": "^1.1.0"
   },
   "repository": {
     "type": "git",
@@ -28,31 +86,7 @@
     "github",
     "api"
   ],
-  "contributors": [
-    "Sergey Klimov <sergey.v.klimov@gmail.com> (http://darvin.github.com/)",
-    "Michael Aufreiter (http://substance.io)",
-    "Ændrew Rininsland <aendrew.rininsland@thetimes.co.uk> (http://www.aendrew.com)"
-  ],
-  "license": "BSD",
-  "readmeFilename": "README.md",
-  "gitHead": "aa8aa3c8cd5ce5240373d4fd1d06a7ab4af41a36",
   "bugs": {
     "url": "https://github.com/michael/github/issues"
-  },
-  "browser": {
-    "xmlhttprequest": false
-  },
-  "testling": {
-    "files": "test/test.*.js",
-    "browsers": [
-      "iexplore/9.0..latest",
-      "chrome/18.0..latest",
-      "firefox/15.0..latest",
-      "opera/11.0..latest",
-      "safari/5.0.5..latest",
-      "iphone/6.0..latest",
-      "ipad/6.0..latest",
-      "android-browser/4.2..latest"
-    ]
   }
 }

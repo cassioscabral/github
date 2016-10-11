@@ -1,312 +1,114 @@
 # Github.js
 
-[![Stories in Ready](https://badge.waffle.io/michael/github.png?label=ready&title=Ready)](https://waffle.io/michael/github)[![Build Status](https://travis-ci.org/darvin/github.svg?branch=master)](https://travis-ci.org/darvin/github)[![Coverage Status](https://img.shields.io/coveralls/michael/github.svg)](https://coveralls.io/r/michael/github)
+[![Downloads per month](https://img.shields.io/npm/dm/github-api.svg?maxAge=2592000)][npm-package]
+[![Latest version](https://img.shields.io/npm/v/github-api.svg?maxAge=3600)][npm-package]
+[![Gitter](https://img.shields.io/gitter/room/michael/github.js.svg?maxAge=2592000)][gitter]
+[![Travis](https://img.shields.io/travis/michael/github.svg?maxAge=60)][travis-ci]
+<!-- [![Codecov](https://img.shields.io/codecov/c/github/michael/github.svg?maxAge=2592000)][codecov] -->
 
-Github.js provides a minimal higher-level wrapper around git's [plumbing commands](http://git-scm.com/book/en/Git-Internals-Plumbing-and-Porcelain), exposing an API for manipulating GitHub repositories on the file level. It is being developed in the context of [Prose](http://prose.io), a content editor for GitHub.
+Github.js provides a minimal higher-level wrapper around Github's API. It was concieved in the context of
+[Prose][prose], a content editor for GitHub.
 
-This repo is now officially maintained by [DevelopmentSeed](https://github.com/developmentseed), the people behind [Prose.io](http://prose.io).
+## [Read the docs][docs]
 
 ## Installation
+Github.js is available from `npm` or [unpkg][unpkg].
 
-Either grab `github.js` from this repo or install via NPM:
-
-```
+```shell
 npm install github-api
 ```
 
-## Usage
+```html
+<!-- just github-api source (5.3kb) -->
+<script src="https://unpkg.com/github-api/dist/GitHub.min.js"></script>
 
-Create a Github instance.
+<!-- standalone (20.3kb) -->
+<script src="https://unpkg.com/github-api/dist/GitHub.bundle.min.js"></script>
+```
 
-```js
-var github = new Github({
-  username: "YOU_USER",
-  password: "YOUR_PASSWORD",
-  auth: "basic"
+## Compatibility
+Github.js is tested on Node:
+* 6.x
+* 5.x
+* 4.x
+* 0.12
+
+## GitHub Tools
+
+The team behind Github.js has created a whole organization, called [GitHub Tools](https://github.com/github-tools),
+dedicated to GitHub and its API. In the near future this repository could be moved under the GitHub Tools organization
+as well. In the meantime, we recommend you to take a look at other projects of the organization.
+
+## Samples
+
+```javascript
+/*
+   Data can be retrieved from the API either using callbacks (as in versions < 1.0)
+   or using a new promise-based API. For now the promise-based API just returns the
+   raw HTTP request promise; this might change in the next version.
+ */
+import GitHub from 'github-api';
+
+// unauthenticated client
+const gh = new GitHub();
+let gist = gh.getGist(); // not a gist yet
+gist.create({
+   public: true,
+   description: 'My first gist',
+   files: {
+      "file1.txt": {
+         content: "Aren't gists great!"
+      }
+   }
+}).then(function({data}) {
+   // Promises!
+   let gistJson = data;
+   gist.read(function(err, gist, xhr) {
+      // if no error occurred then err == null
+
+      // gistJson === httpResponse.data
+
+      // xhr === httpResponse
+   });
 });
 ```
 
-Or if you prefer OAuth, it looks like this:
+```javascript
+import GitHub from 'github-api';
 
-```js
-var github = new Github({
-  token: "OAUTH_TOKEN",
-  auth: "oauth"
+// basic auth
+const gh = new GitHub({
+   username: 'FOO',
+   password: 'NotFoo'
 });
-```
 
-You can use either:
-* Authorised App Tokens (via client/secret pairs), used for bigger applications, created in web-flows/on the fly
-* Personal Access Tokens (simpler to set up), used on command lines, scripts etc, created in GitHub web UI
-
-See these pages for more info:
-
-[Creating an access token for command-line use](https://help.github.com/articles/creating-an-access-token-for-command-line-use)
-
-[Github API OAuth Overview] (http://developer.github.com/v3/oauth)
-
-Enterprise Github instances may be specified using the `apiUrl` option:
-
-```js
-var github = new Github({
-  apiUrl: "https://serverName/api/v3",
-  ...
+const me = gh.getUser();
+me.listNotifications(function(err, notifications) {
+   // do some stuff
 });
+
+const clayreimann = gh.getUser('clayreimann');
+clayreimann.listStarredRepos()
+   .then(function({data: reposJson}) {
+      // do stuff with reposJson
+   });
 ```
 
-## Repository API
-
-
-```js
-var repo = github.getRepo(username, reponame);
-```
-
-Show repository information
-
-```js
-repo.show(function(err, repo) {});
-```
-
-Delete a repository
-
-```js
-repo.deleteRepo(function(err, res) {});
-```
-
-Get contents at a particular path in a particular branch.
-
-```js
-repo.contents(branch, "path/to/dir", function(err, contents) {});
-```
-
-Fork repository. This operation runs asynchronously. You may want to poll for `repo.contents` until the forked repo is ready.
-
-```js
-repo.fork(function(err) {});
-```
-
-Create new branch for repo. You can omit oldBranchName to default to "master".
-
-```js
-repo.branch(oldBranchName, newBranchName, function(err) {});
-```
-
-List Pull Requests.
-
-```js
-var state = 'open'; //or 'closed', or 'all'
-repo.listPulls(state, function(err, pullRequests) {});
-```
-
-Get details of a Pull Request.
-
-```js
-var pullRequestID = 123;
-repo.getPull(pullRequestID, function(err, pullRequestInfo) {});
-```
-
-Create Pull Request.
-
-```js
-var pull = {
-  title: message,
-  body: "This pull request has been automatically generated by Prose.io.",
-  base: "gh-pages",
-  head: "michael" + ":" + "prose-patch"
-};
-repo.createPullRequest(pull, function(err, pullRequest) {});
-```
-
-Retrieve all available branches (aka heads) of a repository.
-
-```js
-repo.listBranches(function(err, branches) {});
-```
-
-Store contents at a certain path, where files that don't yet exist are created on the fly.
-
-```js
-repo.write('master', 'path/to/file', 'YOUR_NEW_CONTENTS', 'YOUR_COMMIT_MESSAGE', function(err) {});
-```
-
-Not only can you can write files, you can of course read them.
-
-```js
-repo.read('master', 'path/to/file', function(err, data) {});
-```
-
-Move a file from A to B.
-
-```js
-repo.move('master', 'path/to/file', 'path/to/new_file', function(err) {});
-```
-
-Remove a file.
-
-```js
-repo.remove('master', 'path/to/file', function(err) {});
-```
-
-Get information about a particular commit.
-
-```js
-repo.getCommit('master', sha, function(err, commit) {});
-```
-
-Exploring files of a repository is easy too by accessing the top level tree object.
-
-```js
-repo.getTree('master', function(err, tree) {});
-```
-
-If you want to access all blobs and trees recursively, you can add `?recursive=true`.
-
-```js
-repo.getTree('master?recursive=true', function(err, tree) {});
-```
-
-Given a filepath, retrieve the reference blob or tree sha.
-
-```js
-repo.getSha('master', '/path/to/file', function(err, sha) {});
-```
-
-For a given reference, get the corresponding commit sha.
-
-```js
-repo.getRef('heads/master', function(err, sha) {});
-```
-
-Create a new reference.
-
-```js
-var refSpec = {
-  "ref": "refs/heads/my-new-branch-name",
-  "sha": "827efc6d56897b048c772eb4087f854f46256132"
-};
-repo.createRef(refSpec, function(err) {});
-```
-
-Delete a reference.
-
-```js
-repo.deleteRef('heads/gh-pages', function(err) {});
-```
-
-Get contributors list with additions, deletions, and commit counts.
-
-```js
-repo.contributors(function(err, data) {});
-```
-
-## User API
-
-
-```js
-var user = github.getUser();
-```
-
-List all repositories of the authenticated user, including private repositories and repositories in which the user is a collaborator and not an owner.
-
-```js
-user.repos(function(err, repos) {});
-```
-
-List organizations the autenticated user belongs to.
-
-```js
-user.orgs(function(err, orgs) {});
-```
-
-List authenticated user's gists.
-
-```js
-user.gists(function(err, gists) {});
-```
-
-List unread notifications for the authenticated user.
-
-```js
-user.notifications(function(err, notifications) {});
-```
-
-Show user information for a particular username. Also works for organizations.
-
-```js
-user.show(username, function(err, user) {});
-```
-
-List public repositories for a particular user.
-
-```js
-user.userRepos(username, function(err, repos) {});
-```
-
-Create a new repo for the authenticated user
-
-```js
-user.createRepo({"name": "test"}, function(err, res) {});
-```
-Repo description, homepage, private/public can also be set.
-For a full list of options see the docs [here](https://developer.github.com/v3/repos/#create)
-
-
-List repositories for a particular organization. Includes private repositories if you are authorized.
-
-```js
-user.orgRepos(orgname, function(err, repos) {});
-```
-
-List all gists of a particular user. If username is ommitted gists of the current authenticated user are returned.
-
-```js
-user.userGists(username, function(err, gists) {});
-```
-
-## Gist API
-
-```js
-var gist = github.getGist(3165654);
-```
-
-Read the contents of a Gist.
-
-```js
-gist.read(function(err, gist) {
-
+```javascript
+var GitHub = require('github-api');
+
+// token auth
+var gh = new GitHub({
+   token: 'MY_OAUTH_TOKEN'
 });
+
+var yahoo = gh.getOrganization('yahoo');
+yahoo.listRepos(function(err, repos) {
+   // look at all the repos!
+})
 ```
 
-Updating the contents of a Gist. Please consult the documentation on [GitHub](http://developer.github.com/v3/gists/).
-
-```js
-var delta = {
-  "description": "the description for this gist",
-  "files": {
-    "file1.txt": {
-      "content": "updated file contents"
-    },
-    "old_name.txt": {
-      "filename": "new_name.txt",
-      "content": "modified contents"
-    },
-    "new_file.txt": {
-      "content": "a new file"
-    },
-    "delete_this_file.txt": null
-  }
-};
-
-gist.update(delta, function(err, gist) {
-
-});
-```
-## Issues API
-
-```js
-var issues = github.getIssues(username, reponame);
-```
-
+<<<<<<< HEAD
 To read all the issues of a given repository
 
 ```js
@@ -415,3 +217,13 @@ Consider commit messages.
 ### 0.1.X
 
 Initial version.
+=======
+[codecov]: https://codecov.io/github/michael/github?branch=master
+[docs]: http://michael.github.io/github/
+[gitter]: https://gitter.im/michael/github
+[npm-package]: https://www.npmjs.com/package/github-api/
+[unpkg]: https://unpkg.com/github-api/
+[prose]: http://prose.io
+[travis-ci]: https://travis-ci.org/michael/github
+[xhr-link]: http://blogs.msdn.com/b/ieinternals/archive/2010/05/13/xdomainrequest-restrictions-limitations-and-workarounds.aspx
+>>>>>>> refs/remotes/michael/master

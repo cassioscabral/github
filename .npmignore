@@ -1,10 +1,6 @@
-.sass-cache/
-_site/
 docs/
-dist/
 coverage/
 node_modules/
 
 .DS_Store
-npm-debug.log
 sauce.json
